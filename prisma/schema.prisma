@@ -13,6 +13,21 @@ enum UserRole {
   admin
 }
 
+enum ProductType {
+  workshop
+  course
+  ebook
+}
+
+enum LessonType {
+  vimeo
+  youtube
+  pdf
+  text
+  quiz
+  video_embed
+}
+
 model Profile {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -23,11 +38,27 @@ model Profile {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  devices     Device[]
-  enrollments Enrollment[]
-  affiliate   Affiliate?
+  devices       Device[]
+  enrollments   Enrollment[]
+  affiliate     Affiliate?
+  orders        Order[]
+  sessions      Session[]
+  notifications Notification[]
+  auditLogs    AuditLog[]
 
   @@map("profiles")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
 model Device {
@@ -47,20 +78,22 @@ model Device {
 }
 
 model Product {
-  id            String   @id @default(uuid())
+  id            String      @id @default(uuid())
   title         String
-  slug          String   @unique
+  slug          String      @unique
   description   String?
-  coverImageUrl String?  @map("cover_image_url")
-  productType   String   @default("course") @map("product_type")
-  price         Float    @default(0)
-  createdAt     DateTime @default(now()) @map("created_at")
-  isActive      Boolean  @default(true) @map("is_active")
+  coverImageUrl String?     @map("cover_image_url")
+  productType   ProductType @default(course) @map("product_type")
+  price         Float       @default(0)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  isActive      Boolean     @default(true) @map("is_active")
 
-  modules      Module[]
-  enrollments  Enrollment[]
-  commissions  Commission[]
-  waitingList  WaitingList[]
+  modules     Module[]
+  enrollments Enrollment[]
+  commissions Commission[]
+  orders      Order[]
+  waitingList WaitingList[]
 
   @@map("products")
 }
@@ -85,7 +118,7 @@ model Lesson {
   title           String
   contentUrl      String?  @map("content_url")
   description     String?
-  lessonType      String   @default("video_embed") @map("lesson_type")
+  lessonType      LessonType @default(video_embed) @map("lesson_type")
   durationSeconds Int      @default(0) @map("duration_seconds")
   sortOrder       Int      @default(0) @map("sort_order")
   isFree          Boolean  @default(false) @map("is_free")
@@ -158,9 +191,13 @@ model Affiliate {
   isActive          Boolean  @default(true) @map("is_active")
   createdAt         DateTime @default(now()) @map("created_at")
 
-  profile     Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  waiting    WaitingList[]
-  commissions Commission[]
+  profile               Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  orders               Order[]
+  affiliateClicks      AffiliateClick[]
+  affiliateConversions AffiliateConversion[]
+  affiliateWithdrawals AffiliateWithdrawal[]
+  waiting              WaitingList[]
+  commissions          Commission[]
 
   @@map("affiliates")
 }
@@ -182,4 +219,109 @@ model Commission {
 
   @@unique([affiliateId, enrollmentId])
   @@map("commissions")
+}
+
+model Order {
+  id           String   @id @default(uuid())
+  profileId    String   @map("profile_id")
+  productId    String   @map("product_id")
+  affiliateId  String?  @map("affiliate_id")
+  amount       Float
+  status       String   @default("pending") @map("status")
+  paymentProof String?  @map("payment_proof_url")
+  paymentRef   String?  @map("payment_reference")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  approvedAt   DateTime? @map("approved_at")
+  approvedBy   String?  @map("approved_by")
+
+  profile   Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  affiliate Affiliate? @relation(fields: [affiliateId], references: [id])
+
+  @@map("orders")
+}
+
+model AffiliateClick {
+  id          String   @id @default(uuid())
+  affiliateId String   @map("affiliate_id")
+  visitorFp   String   @map("visitor_fp")
+  ip          String?
+  referrer    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@map("affiliate_clicks")
+}
+
+model AffiliateConversion {
+  id          String   @id @default(uuid())
+  affiliateId String   @map("affiliate_id")
+  visitorFp   String   @map("visitor_fp")
+  orderId     String   @map("order_id")
+  commission  Float
+  status      String   @default("pending")
+  createdAt   DateTime @default(now()) @map("created_at")
+  confirmedAt DateTime? @map("confirmed_at")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@map("affiliate_conversions")
+}
+
+model AffiliateWithdrawal {
+  id         String    @id @default(uuid())
+  affiliateId String   @map("affiliate_id")
+  amount      Float
+  status      String   @default("requested")
+  pixKey      String?  @map("pix_key")
+  pixType     String?  @map("pix_key_type")
+  notes       String?
+  requestedAt DateTime @default(now()) @map("requested_at")
+  approvedAt  DateTime? @map("approved_at")
+  paidAt      DateTime? @map("paid_at")
+  paidBy      String?  @map("paid_by")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@map("affiliate_withdrawals")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  title     String
+  body      String?
+  linkUrl   String?  @map("link_url")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Setting {
+  key   String @id
+  value Json
+  description String?
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  profileId  String?  @map("profile_id")
+  action     String
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  details    Json?
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profile Profile? @relation(fields: [profileId], references: [id])
+
+  @@map("audit_log")
 }

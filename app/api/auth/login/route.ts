@@ -27,12 +27,17 @@ export async function POST(req: NextRequest) {
       role: (profile.role as 'student' | 'affiliate' | 'admin')
     })
 
-    const cookieValue = `tenportal_token=${token}; Path=/; Expires=${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()}; Secure; HttpOnly; SameSite=Lax`
     const response = NextResponse.json({
       ok: true,
       data: { user: { id: profile.id, email: profile.email, fullName: profile.fullName, role: profile.role } }
     })
-    response.headers.set('Set-Cookie', cookieValue)
+    response.cookies.set('tenportal_token', token, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 7 days
+    })
     return response
   } catch (e) {
     console.error('[LOGIN ERROR]', e)
