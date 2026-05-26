@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
 
     res.cookies.set('tenportal_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: undefined,
       maxAge: 60 * 60 * 24 * 7,
       path: '/'
     })
