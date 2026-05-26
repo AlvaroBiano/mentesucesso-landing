@@ -7,13 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  student
+  affiliate
+  admin
+}
+
 model Profile {
   id           String   @id @default(uuid())
   email        String   @unique
   fullName     String   @map("full_name")
   cpf          String   @unique
   passwordHash String   @map("password_hash")
-  role         String   @default("student")
+  role         UserRole @default(student) @map("role")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
