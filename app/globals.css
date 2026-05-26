@@ -382,7 +382,6 @@ header {
   letter-spacing: 3px;
   opacity: 0.5;
   animation: fadeIn 1s ease 1.5s forwards;
-  opacity: 0;
 }
 .hero-scroll::after {
   content: '';
@@ -679,7 +678,7 @@ header {
   font-size: 2.5rem;
   font-weight: 900;
   color: var(--gold);
-  opacity: 0.25;
+  opacity: 0.6;
   margin-bottom: 8px;
 }
 .arch-card h3 {
