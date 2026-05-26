@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "sucessoementalidadefinanceira" generated at 2026-05-26T18:05:15.606Z.

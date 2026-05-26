@@ -171,7 +171,7 @@ export default function LoginPage() {
         )}
 
         <div className={styles.footer}>
-          <a href="https://sucessoementalidadefinanceira.netlify.app" target="_blank" rel="noopener noreferrer">Voltar ao workshop</a>
+          <a href="https://mentesucesso-landing.vercel.app" target="_blank" rel="noopener noreferrer">Voltar ao workshop</a>
         </div>
       </div>
     </div>
