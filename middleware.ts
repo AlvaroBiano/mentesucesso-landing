@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.AUTH_SECRET || 'a8f3e9b2c7d1f0a4e6b8c3d9e2f1a5b7c4e8d2f6a1b3c7e9d0f2a4b6c8e0d2f4'
+const JWT_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET || 'dev-secret-replace-in-production'
 
 const PROTECTED = ['/admin', '/aluno', '/afiliado']
 const ADMIN_ONLY = ['/admin']

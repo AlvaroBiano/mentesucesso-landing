@@ -31,14 +31,16 @@ export default function LoginPage() {
       })
 
       const data = await res.json()
+      console.log('Login response:', JSON.stringify(data))
+      console.log('Cookies after login:', document.cookie)
 
       if (!data.ok) {
         setError(data.error)
         return
       }
 
-      // Redireciona baseado no role
       const role = data.data?.user?.role
+      console.log('Role:', role, '— redirecting to:', role === 'admin' ? '/admin' : '/aluno')
       if (role === 'admin') {
         router.push('/admin')
       } else if (role === 'affiliate') {
@@ -46,7 +48,8 @@ export default function LoginPage() {
       } else {
         router.push('/aluno')
       }
-    } catch {
+    } catch (err) {
+      console.error('Login error:', err)
       setError('Erro ao conectar com o servidor')
     } finally {
       setLoading(false)
