@@ -1,2 +1,18 @@
 # Local Netlify folder
 .netlify
+
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Misc
+.DS_Store
+*.log
