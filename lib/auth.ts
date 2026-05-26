@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { prisma } from './prisma'
 import type { Profile } from '@prisma/client'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-replace-in-production'
+const JWT_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET || 'dev-secret-replace-in-production'
 
 export interface TokenPayload {
   id: string
@@ -15,7 +15,7 @@ export async function signToken(payload: TokenPayload): Promise<string> {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' } as jwt.SignOptions)
 }
 
-export async function verifyToken(token: string): Promise<TokenPayload | null> {
+export function verifyToken(token: string): TokenPayload | null {
   try {
     return jwt.verify(token, JWT_SECRET) as TokenPayload
   } catch {
